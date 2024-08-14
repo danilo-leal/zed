@@ -70,8 +70,8 @@ use ui::TintColor;
 use ui::{
     prelude::*,
     utils::{format_distance_from_now, DateTimeType},
-    Avatar, AvatarShape, ButtonLike, ContextMenu, Disclosure, ElevationIndex, KeyBinding, ListItem,
-    ListItemSpacing, PopoverMenu, PopoverMenuHandle, Tooltip,
+    Avatar, AvatarShape, ButtonLike, ContextMenu, Disclosure, ElevationIndex, IconButtonShape,
+    KeyBinding, ListItem, ListItemSpacing, PopoverMenu, PopoverMenuHandle, Tooltip,
 };
 use util::ResultExt;
 use workspace::{
@@ -4001,9 +4001,11 @@ impl ContextEditorToolbarItem {
         let active_context_editor = self.active_context_editor.clone();
 
         PopoverMenu::new("inject-context-menu")
-            .trigger(IconButton::new("trigger", IconName::Quote).tooltip(|cx| {
-                Tooltip::with_meta("Insert Context", None, "Type / to insert via keyboard", cx)
-            }))
+            .trigger(
+                IconButton::new("trigger", IconName::EllipsisVertical)
+                    .shape(IconButtonShape::Square)
+                    .tooltip(|cx| Tooltip::text("Open Context Options", cx)),
+            )
             .menu(move |cx| {
                 let active_context_editor = active_context_editor.clone()?;
                 ContextMenu::build(cx, |mut menu, _cx| {
@@ -4102,22 +4104,22 @@ impl Render for ContextEditorToolbarItem {
             .flex_1()
             .min_w(rems(DEFAULT_TAB_TITLE.len() as f32))
             .when(self.active_context_editor.is_some(), |left_side| {
-                left_side
-                    .child(
-                        IconButton::new("regenerate-context", IconName::ArrowCircle)
-                            .visible_on_hover("toolbar")
-                            .tooltip(|cx| Tooltip::text("Regenerate Summary", cx))
-                            .on_click(cx.listener(move |_, _, cx| {
-                                cx.emit(ContextEditorToolbarItemEvent::RegenerateSummary)
-                            })),
-                    )
-                    .child(self.model_summary_editor.clone())
+                left_side.child(self.model_summary_editor.clone())
+                // .child(
+                //     IconButton::new("regenerate-context", IconName::ArrowCircle)
+                //         .visible_on_hover("toolbar")
+                //         .tooltip(|cx| Tooltip::text("Regenerate Summary", cx))
+                //         .on_click(cx.listener(move |_, _, cx| {
+                //             cx.emit(ContextEditorToolbarItemEvent::RegenerateSummary)
+                //         })),
+                // )
             });
+
         let active_provider = LanguageModelRegistry::read_global(cx).active_provider();
         let active_model = LanguageModelRegistry::read_global(cx).active_model();
 
         let right_side = h_flex()
-            .gap_2()
+            .gap_1()
             .child(ModelSelector::new(
                 self.fs.clone(),
                 ButtonLike::new("active-model")
@@ -4166,6 +4168,7 @@ impl Render for ContextEditorToolbarItem {
 
         h_flex()
             .size_full()
+            .pl_1()
             .gap_2()
             .justify_between()
             .child(left_side)
