@@ -92,7 +92,7 @@ use workspace::{
     DraggedSelection, Pane, Save, ShowConfiguration, Toast, ToggleZoom, ToolbarItemEvent,
     ToolbarItemLocation, ToolbarItemView, Workspace,
 };
-use workspace::{item::TabTooltipContent, searchable::SearchableItemHandle, DraggedTab};
+use workspace::{searchable::SearchableItemHandle, DraggedTab};
 use zed_actions::InlineAssist;
 
 pub fn init(cx: &mut AppContext) {
@@ -4235,7 +4235,7 @@ impl Item for ContextEditor {
         }
     }
 
-    fn tab_tooltip_content(&self, cx: &AppContext) -> Option<TabTooltipContent> {
+    fn tab_tooltip_text(&self, cx: &AppContext) -> Option<SharedString> {
         Some(self.title(cx).to_string().into())
     }
 

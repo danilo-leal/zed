@@ -16,9 +16,7 @@ use project::{image_store::ImageItemEvent, ImageItem, Project, ProjectPath};
 use settings::Settings;
 use util::paths::PathExt;
 use workspace::{
-    item::{
-        BreadcrumbText, Item, ProjectItem, SerializableItem, TabContentParams, TabTooltipContent,
-    },
+    item::{BreadcrumbText, Item, ProjectItem, SerializableItem, TabContentParams},
     ItemId, ItemSettings, ToolbarItemLocation, Workspace, WorkspaceId,
 };
 
@@ -90,7 +88,7 @@ impl Item for ImageView {
         true
     }
 
-    fn tab_tooltip_content(&self, cx: &AppContext) -> Option<TabTooltipContent> {
+    fn tab_tooltip_text(&self, cx: &AppContext) -> Option<SharedString> {
         let abs_path = self.image_item.read(cx).file.as_local()?.abs_path(cx);
         let file_path = abs_path.compact().to_string_lossy().to_string();
         Some(file_path.into())

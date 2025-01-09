@@ -37,7 +37,7 @@ use ui::{
 };
 use util::paths::PathMatcher;
 use workspace::{
-    item::{BreadcrumbText, Item, ItemEvent, ItemHandle, TabTooltipContent},
+    item::{BreadcrumbText, Item, ItemEvent, ItemHandle},
     searchable::{Direction, SearchableItem, SearchableItemHandle},
     DeploySearch, ItemNavHistory, NewSearch, ToolbarItemEvent, ToolbarItemLocation,
     ToolbarItemView, Workspace, WorkspaceId,
@@ -389,7 +389,7 @@ impl FocusableView for ProjectSearchView {
 impl Item for ProjectSearchView {
     type Event = ViewEvent;
 
-    fn tab_tooltip_content(&self, cx: &AppContext) -> Option<TabTooltipContent> {
+    fn tab_tooltip_text(&self, cx: &AppContext) -> Option<SharedString> {
         let query_text = self.query_editor.read(cx).text(cx);
 
         query_text

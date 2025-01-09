@@ -42,7 +42,7 @@ pub use toolbar_controls::ToolbarControls;
 use ui::{h_flex, prelude::*, Icon, IconName, Label};
 use util::ResultExt;
 use workspace::{
-    item::{BreadcrumbText, Item, ItemEvent, ItemHandle, TabContentParams, TabTooltipContent},
+    item::{BreadcrumbText, Item, ItemEvent, ItemHandle, TabContentParams},
     searchable::SearchableItemHandle,
     ItemNavHistory, ToolbarItemLocation, Workspace,
 };
@@ -675,7 +675,7 @@ impl Item for ProjectDiagnosticsEditor {
             .update(cx, |editor, cx| editor.navigate(data, cx))
     }
 
-    fn tab_tooltip_content(&self, _: &AppContext) -> Option<TabTooltipContent> {
+    fn tab_tooltip_text(&self, _: &AppContext) -> Option<SharedString> {
         Some("Project Diagnostics".into())
     }
 

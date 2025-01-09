@@ -241,9 +241,15 @@ pub trait Item: FocusableView + EventEmitter<Self::Event> {
     fn navigate(&mut self, _: Box<dyn Any>, _: &mut ViewContext<Self>) -> bool {
         false
     }
-    fn tab_tooltip_content(&self, _cx: &AppContext) -> Option<TabTooltipContent> {
+
+    fn tab_tooltip_text(&self, _cx: &AppContext) -> Option<SharedString> {
         None
     }
+
+    fn tab_tooltip_content(&self, cx: &AppContext) -> Option<TabTooltipContent> {
+        self.tab_tooltip_text(cx).map(TabTooltipContent::text)
+    }
+
     fn tab_description(&self, _: usize, _: &AppContext) -> Option<SharedString> {
         None
     }
@@ -425,6 +431,7 @@ pub trait ItemHandle: 'static + Send {
         handler: Box<dyn Fn(ItemEvent, &mut WindowContext)>,
     ) -> gpui::Subscription;
     fn focus_handle(&self, cx: &WindowContext) -> FocusHandle;
+    fn tab_tooltip_text(&self, cx: &AppContext) -> Option<SharedString>;
     fn tab_tooltip_content(&self, cx: &AppContext) -> Option<TabTooltipContent>;
     fn tab_description(&self, detail: usize, cx: &AppContext) -> Option<SharedString>;
     fn tab_content(&self, params: TabContentParams, cx: &WindowContext) -> AnyElement;
@@ -528,6 +535,10 @@ impl<T: Item> ItemHandle for View<T> {
 
     fn focus_handle(&self, cx: &WindowContext) -> FocusHandle {
         self.focus_handle(cx)
+    }
+
+    fn tab_tooltip_text(&self, cx: &AppContext) -> Option<SharedString> {
+        self.read(cx).tab_tooltip_text(cx)
     }
 
     fn tab_tooltip_content(&self, cx: &AppContext) -> Option<TabTooltipContent> {
