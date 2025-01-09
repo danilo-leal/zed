@@ -47,7 +47,7 @@ impl MessageEditor {
         thread: Model<Thread>,
         cx: &mut ViewContext<Self>,
     ) -> Self {
-        let context_store = cx.new_model(|_cx| ContextStore::new());
+        let context_store = cx.new_model(|_cx| ContextStore::new(workspace.clone()));
         let context_picker_menu_handle = PopoverMenuHandle::default();
         let inline_context_picker_menu_handle = PopoverMenuHandle::default();
         let model_selector_menu_handle = PopoverMenuHandle::default();
@@ -147,11 +147,10 @@ impl MessageEditor {
             editor.clear(cx);
             text
         });
-        let context = self
-            .context_store
-            .update(cx, |this, _cx| this.context().clone());
 
-        self.thread.update(cx, |thread, cx| {
+        let thread = self.thread.clone();
+        thread.update(cx, |thread, cx| {
+            let context = self.context_store.read(cx).snapshot(cx).collect::<Vec<_>>();
             thread.insert_user_message(user_message, context, cx);
             let mut request = thread.to_completion_request(request_kind, cx);
 
