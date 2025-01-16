@@ -2033,7 +2033,6 @@ impl EditorElement {
         scroll_position: gpui::Point<f32>,
         rows: Range<DisplayRow>,
         buffer_rows: impl Iterator<Item = Option<MultiBufferRow>>,
-        active_rows: &BTreeMap<DisplayRow, bool>,
         newest_selection_head: Option<DisplayPoint>,
         snapshot: &EditorSnapshot,
         cx: &mut WindowContext,
@@ -2070,17 +2069,15 @@ impl EditorElement {
         };
         let relative_rows = self.calculate_relative_line_numbers(snapshot, &rows, relative_to);
         let mut line_number = String::new();
+        let mut contador_test = 0;
         let line_numbers = buffer_rows
             .into_iter()
+            .inspect(|_| contador_test += 1)
             .enumerate()
             .flat_map(|(ix, buffer_row)| {
                 let buffer_row = buffer_row?;
                 let display_row = DisplayRow(rows.start.0 + ix as u32);
-                let color = if active_rows.contains_key(&display_row) {
-                    cx.theme().colors().editor_active_line_number
-                } else {
-                    cx.theme().colors().editor_line_number
-                };
+                let color = cx.theme().colors().editor_line_number;
                 line_number.clear();
                 let default_number = buffer_row.0 + 1;
                 let number = relative_rows
@@ -2118,6 +2115,12 @@ impl EditorElement {
                 Some((multi_buffer_row, (shaped_line, hitbox)))
             })
             .collect();
+        
+        dbg!((
+            "quantidade de linhas no layout_line_numbers",
+            contador_test,
+        ));
+
         Arc::new(line_numbers)
     }
 
@@ -3961,15 +3964,33 @@ impl EditorElement {
         let line_height = layout.position_map.line_height;
         cx.set_cursor_style(CursorStyle::Arrow, &layout.gutter_hitbox);
 
-        for (_, (line, hitbox)) in layout.line_numbers.iter() {
+        dbg!((
+            "quantidade de linhas no paint_line_numbers",
+            layout.line_numbers.values().count()
+        ));
+
+        for (ix, (line, hitbox)) in layout.line_numbers.values().enumerate() {
             let Some(hitbox) = hitbox else {
                 continue;
             };
-            let color = if !is_singleton && hitbox.is_hovered(cx) {
-                cx.theme().colors().editor_active_line_number
+
+            let display_row = DisplayRow(layout.visible_display_row_range.start.0 + ix as u32);
+            let is_active = layout.active_rows.contains_key(&display_row);
+
+            let color = if is_active {
+                println!(
+                    "row = {}, ix = {ix}",
+                    layout.visible_display_row_range.start.0 + ix as u32
+                );
+                // println!("line number text = \"{}\"", line.text);
+                cx.theme().colors().text_accent
+            } else if !is_singleton && hitbox.is_hovered(cx) {
+                dbg!("hover!");
+                cx.theme().colors().text_disabled // TODO: make this a theme color
             } else {
                 cx.theme().colors().editor_line_number
             };
+
             let Some(line) = self
                 .shape_line_number(line.text.clone(), color, cx)
                 .log_err()
@@ -6280,7 +6301,6 @@ impl Element for EditorElement {
                         scroll_position,
                         start_row..end_row,
                         buffer_rows.iter().copied(),
-                        &active_rows,
                         newest_selection_head,
                         &snapshot,
                         cx,
@@ -7661,7 +7681,6 @@ mod tests {
                     gpui::Point::default(),
                     DisplayRow(0)..DisplayRow(6),
                     (0..6).map(MultiBufferRow).map(Some),
-                    &Default::default(),
                     Some(DisplayPoint::new(DisplayRow(0), 0)),
                     &snapshot,
                     cx,
